@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#ffffffff</color>
+    <color name="enable_color">#181919</color>
+    <color name="disable_color">#aaaaaa</color>
+    <color name="disable_filter_color">#88000000</color>
+    <color name="bluetooth_filter_color">#ff000000</color>
+    <color name="color_button_red">#ff992011</color>
+    <color name="color_button_red_pressed">#ff550900</color>
+    <color name="color_button_blue">#ff2b358d</color>
+    <color name="color_button_blue_pressed">#ff1a2455</color>
+    <color name="color_button_green">#ff2c9614</color>
+    <color name="color_button_green_pressed">#ff1b5503</color>
+    <color name="color_button_cyan">#ff3a8aa5</color>
+    <color name="color_button_cyan_pressed">#ff2b4874</color>
+    <color name="color_button_magenta">#ffbb34a6</color>
+    <color name="color_button_magenta_pressed">#ff771273</color>
+    <color name="color_button_yellow">#ffc3af0c</color>
+    <color name="color_button_yellow_pressed">#ff815d00</color>
+</resources>
