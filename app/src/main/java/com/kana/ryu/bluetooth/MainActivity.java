@@ -29,11 +29,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
     }
-    @Override
-    protected void onPause() {
-        super.onPause();
-        BluetoothManager.INSTANCE.disconnect();
-    }
     @OnClick(R.id.connect_fab)
     public void onClickConnectFAB(View view) {
         BluetoothManager.INSTANCE.connect(new BluetoothListenerImpl(this));
