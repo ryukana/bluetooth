@@ -58,6 +58,9 @@ public enum BluetoothManager {
             listener.onErrorOccurred("unknown error is occurred");
         }
     }
+    public boolean isConnected() {
+        return isStarted;
+    }
     public void write(String message) {
         if (!isStarted) {
             AppLog.e("please call this method after connect");
