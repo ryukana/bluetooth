@@ -1,18 +1,28 @@
 package com.kana.ryu.bluetooth;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.DialogInterface;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 public enum BluetoothManager {
     INSTANCE;
-    private static final String DEVICE_NAME = "RNBT-CAB5";
+    private static final String DIALOG_TAG = "DIALOG_TAG";
+    private static final String DEVICE_NAME = "RNBT-";
     // なんだこれ？よくわからんけどBluetoothのプロトコルごとに決まっているらしい。多くのサイトでこういう記載だったので、真似しておく。
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final int VIEW_STATUS = 0;
@@ -40,7 +50,7 @@ public enum BluetoothManager {
         BluetoothDevice targetBluetoothDevice = null;
         for (BluetoothDevice tmpDevice : devices) {
             AppLog.d("found device is :" + tmpDevice.getName());
-            if (tmpDevice.getName().equals(DEVICE_NAME)) {
+            if (tmpDevice.getName().contains(DEVICE_NAME)) {
                 AppLog.d("this is target device");
                 listener.onProgressMessage("target device found: " + tmpDevice.getName());
                 targetBluetoothDevice = tmpDevice;
@@ -56,6 +66,67 @@ public enum BluetoothManager {
         } catch (IOException e) {
             AppLog.e(e);
             listener.onErrorOccurred("unknown error is occurred");
+        }
+    }
+    public void connect(FragmentActivity activity, IBluetoothListener listener) {
+        if (isStarted) {
+            AppLog.d("connect is already finished");
+            listener.onConnectSuccess();
+            return;
+        }
+        listener.onConnectStarted();
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        listener.onProgressMessage("device searching");
+        if (adapter == null) {
+            listener.onErrorOccurred("this device not support bluetooth");
+            return;
+        }
+        Set<BluetoothDevice> devices = adapter.getBondedDevices();
+        if (devices.size() == 0) {
+            listener.onErrorOccurred("target device is not found");
+            return;
+        }
+        AppLog.d("devices.size():" + devices.size());
+        FragmentManager manager = activity.getSupportFragmentManager();
+        ChooseBluetoothDeviceDialogFragment chooseBluetoothDeviceDialog =
+                new ChooseBluetoothDeviceDialogFragment(devices, listener);
+        chooseBluetoothDeviceDialog.show(manager, DIALOG_TAG);
+    }
+    private class ChooseBluetoothDeviceDialogFragment extends DialogFragment {
+        final Set<BluetoothDevice> devices;
+        final IBluetoothListener listener;
+        public ChooseBluetoothDeviceDialogFragment(Set<BluetoothDevice> devices,
+                                                   IBluetoothListener listener) {
+            this.devices = devices;
+            this.listener = listener;
+        }
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            final ArrayList<BluetoothDevice> devices = new ArrayList<>();
+            Iterator<BluetoothDevice> iterator = this.devices.iterator();
+            while (iterator.hasNext()) {
+                BluetoothDevice tmpDevice = (BluetoothDevice) iterator.next();
+                devices.add(tmpDevice);
+            }
+            final ArrayList<String> bluetoothDeviceName = new ArrayList<>();
+            for (BluetoothDevice bluetoothDevice : devices.toArray(new BluetoothDevice[devices.size()])) {
+                bluetoothDeviceName.add(bluetoothDevice.getName());
+            }
+            builder.setTitle("choose device").setItems(bluetoothDeviceName.toArray(
+                            new String[bluetoothDeviceName.size()]),
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            try {
+                                mBluetoothTask = new BluetoothTask(new CallBackHandler(listener), devices.get(which));
+                                new Thread(mBluetoothTask).start();
+                            } catch (IOException e) {
+                                AppLog.e(e);
+                                listener.onErrorOccurred("unknown error is occurred");
+                            }
+                        }
+                    });
+            return builder.create();
         }
     }
     public boolean isConnected() {

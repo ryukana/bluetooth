@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     }
     @OnClick(R.id.connect_fab)
     public void onClickConnectFAB(View view) {
-        BluetoothManager.INSTANCE.connect(new BluetoothListenerImpl(this));
+        BluetoothManager.INSTANCE.connect(this, new BluetoothListenerImpl(this));
     }
     @OnCheckedChanged(R.id.power_toggle_button)
     public void onPowerButton(boolean checked) {
